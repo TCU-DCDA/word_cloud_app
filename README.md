@@ -1,147 +1,146 @@
-# Coding Journey Word Cloud
+# Real-Time Word Cloud for Student Feelings
 
-A real-time word cloud application for collecting and visualizing student feelings about starting their coding journey. Perfect for first-day introductions in coding classes.
+A web application designed to collect and visualize student feelings about starting their coding journey on the first day of an intro coding class. Students submit short paragraphs about their feelings, and the app generates a beautiful, real-time word cloud that updates as responses come in.
 
-## Features
+## 🚀 Live Demo
 
-- **Real-time Updates**: Word cloud updates automatically as new responses come in
-- **Google Sheets Integration**: Uses Google Sheets as a database via Google Apps Script
-- **Responsive Design**: Works great for classroom projection and individual devices
-- **Anonymous Collection**: No personal information required from students
-- **Live Statistics**: Shows response count and last update time
-- **Word Filtering**: Removes common stop words to highlight meaningful content
+**Visit the live application:** [https://tcu-dcda.github.io/word_cloud_app/](https://tcu-dcda.github.io/word_cloud_app/)
 
-## Quick Start
+The app is currently running in **demo mode** with sample student responses to showcase the word cloud functionality. Students can submit new responses and see the word cloud update in real-time.
 
-### Option 1: Demo Mode (Immediate Use)
-1. Open `index.html` in your browser
-2. The app will run in demo mode with simulated data
-3. Perfect for testing the interface before setting up Google Sheets
+## 📚 Classroom Usage
 
-### Option 2: Full Setup with Google Sheets
+### For Students
+1. Visit [https://tcu-dcda.github.io/word_cloud_app/](https://tcu-dcda.github.io/word_cloud_app/)
+2. Write a short paragraph (up to 500 characters) about how you feel starting your coding journey
+3. Click "Share My Feelings" to submit
+4. Watch the word cloud update with everyone's responses!
 
-#### Step 1: Set up Google Sheets
-1. Create a new Google Sheet
-2. Note the Sheet ID from the URL (the long string between `/d/` and `/edit`)
+### For Instructors
+- Share the URL with your class: `https://tcu-dcda.github.io/word_cloud_app/`
+- Project the word cloud on a screen for the whole class to see
+- The word cloud updates automatically every 10 seconds
+- Common words (like "the", "and", "I") are filtered out to focus on meaningful content
+- Perfect for ice-breaker activities and gauging student sentiment
 
-#### Step 2: Deploy Google Apps Script
-1. Go to [script.google.com](https://script.google.com)
-2. Create a new project
-3. Replace the default code with the contents of `google-apps-script.js`
-4. Update the `SHEET_ID` variable with your Google Sheet ID
-5. Deploy as web app:
-   - Click **Deploy** > **New Deployment**
-   - Choose **Web app** as type
-   - Set execute as **Me**
-   - Set access to **Anyone**
-   - Click **Deploy**
-   - Copy the web app URL
+## ✨ Features
 
-#### Step 3: Configure the Frontend
-1. Open `script.js`
-2. Replace `YOUR_GOOGLE_SCRIPT_URL_HERE` with your web app URL
-3. Save the file
+- **Real-time updates**: Word cloud refreshes every 10 seconds with new submissions
+- **Responsive design**: Works on desktop, tablet, and mobile devices
+- **Beautiful visualization**: Colorful word cloud with varying sizes based on frequency
+- **Smart filtering**: Removes common stop words to highlight meaningful content
+- **Character limit**: 500-character limit encourages concise, thoughtful responses
+- **Live statistics**: Shows total number of responses and last update time
 
-#### Step 4: Test the Setup
-1. Open `index.html` in your browser
-2. Submit a test response
-3. Check your Google Sheet to see if the data appears
+## 🔧 Technical Setup (Optional)
 
-## Deployment Options
+The app currently runs in demo mode. To connect it to Google Sheets for persistent data storage:
 
-### GitHub Pages (Recommended)
-1. Create a new GitHub repository
-2. Upload all files to the repository
-3. Enable GitHub Pages in repository settings
-4. Your app will be available at `https://username.github.io/repository-name`
+### Google Sheets Integration
+
+1. **Create a Google Sheet**
+   - Create a new Google Sheet
+   - Rename the first tab to "Responses"
+   - Add headers: `Timestamp | Feelings | Word Count`
+
+2. **Deploy Google Apps Script**
+   - Copy the code from `google-apps-script-formdata.js`
+   - Create a new Google Apps Script project
+   - Replace the default code with the copied code
+   - Update the `SHEET_ID` with your Google Sheet ID
+   - Deploy as a web app with "Anyone" access
+
+3. **Update the Application**
+   - Edit `script.js` 
+   - Replace `YOUR_GOOGLE_SCRIPT_URL_HERE` with your deployed Google Apps Script URL
+   - The app will automatically switch from demo mode to live mode
 
 ### Local Development
-1. Open `index.html` directly in your browser
-2. Or use a local server: `python -m http.server 8000`
 
-## Usage in Class
+```bash
+# Clone the repository
+git clone https://github.com/TCU-DCDA/word_cloud_app.git
+cd word_cloud_app
 
-1. **Before Class**: Set up the app and test it with a few sample responses
-2. **Project the App**: Display the word cloud on a screen visible to all students
-3. **Share the Link**: Give students the URL to submit their responses
-4. **Watch Together**: As responses come in, the word cloud will update in real-time
-5. **Discuss**: Use the emerging words as conversation starters about coding fears, excitement, and expectations
+# Start local server (to avoid CORS issues)
+python3 -m http.server 8000
 
-## Customization
+# Open in browser
+open http://localhost:8000
+```
+
+## 📁 Project Structure
+
+```
+word_cloud_app/
+├── index.html              # Main application interface
+├── style.css              # Responsive styling
+├── script.js              # Frontend logic and word cloud generation
+├── README.md              # This documentation
+├── add-test-data.html     # Testing tool for submissions
+├── debug-test.html        # Debugging interface
+└── google-apps-script-*.js # Backend code for Google Sheets integration
+```
+
+## 🎨 Customization
 
 ### Word Cloud Appearance
 Edit the `WORDCLOUD_OPTIONS` in `script.js`:
-- `color`: Change color scheme
-- `fontFamily`: Change font
-- `rotateRatio`: Adjust word rotation
-- `weightFactor`: Adjust size scaling
+- Colors: Modify the `color` function
+- Font: Change `fontFamily`
+- Size scaling: Adjust `weightFactor`
+- Rotation: Modify `rotateRatio` and `rotationSteps`
+
+### Content Filtering
+Update the `stopWords` set in `updateWordFrequency()` to add/remove filtered words.
 
 ### Update Frequency
-Change `UPDATE_INTERVAL` in `script.js` (default: 10 seconds)
+Change `UPDATE_INTERVAL` in the config (default: 10 seconds).
 
-### Form Behavior
-- Character limit: Currently set to 500 characters
-- Validation: Requires non-empty text
-- Feedback: Shows success/error messages
+## 🏫 Classroom Tips
 
-## Technical Details
+1. **Pre-class Setup**: Test the URL and ensure it works on your classroom computer
+2. **Clear Instructions**: Show students the character limit and encourage honest, thoughtful responses
+3. **Privacy**: Remind students that responses are anonymous but visible to the class
+4. **Discussion Starter**: Use the final word cloud as a springboard for discussion about coding expectations and feelings
+5. **Screenshots**: Capture the final word cloud for future reference or class materials
 
-### Architecture
-- **Frontend**: Vanilla HTML/CSS/JavaScript
-- **Word Cloud**: WordCloud2.js library
-- **Backend**: Google Apps Script
-- **Database**: Google Sheets
-- **Updates**: Polling every 10 seconds
+## 🛠️ Troubleshooting
 
-### Data Flow
-1. Student submits feelings via form
-2. JavaScript sends data to Google Apps Script
-3. Apps Script saves to Google Sheets
-4. Frontend polls for updates every 10 seconds
-5. Word frequencies are calculated and displayed
-
-### Browser Compatibility
-- Modern browsers (Chrome, Firefox, Safari, Edge)
-- Mobile-responsive design
-- No special plugins required
-
-## Troubleshooting
-
-### "Demo mode" message appears
-- The Google Apps Script URL is not configured
-- Check that you've updated `CONFIG.GOOGLE_SCRIPT_URL` in `script.js`
-
-### Responses not appearing in Google Sheets
-- Verify the Google Apps Script is deployed correctly
-- Check that the SHEET_ID is correct
-- Ensure the web app has "Anyone" access permissions
+### App shows "Demo mode" message
+- This is normal! The app is configured to run with sample data
+- Students can still submit responses and see them added to the word cloud
+- To connect to Google Sheets, follow the "Google Sheets Integration" steps above
 
 ### Word cloud not updating
-- Check browser console for errors
-- Verify network connectivity
-- Confirm Google Apps Script is responding (check Network tab in dev tools)
+- Check your internet connection
+- Refresh the page
+- Verify the browser supports modern JavaScript (Chrome, Firefox, Safari, Edge)
 
-### CORS errors
-- Ensure Google Apps Script is deployed as a web app
-- Verify access permissions are set to "Anyone"
+### Form submissions not working
+- Ensure JavaScript is enabled in the browser
+- Try refreshing the page
+- Check browser console for error messages (F12 → Console tab)
 
-## Privacy & Data
+## 📊 Demo Data
 
-- No personal information is collected
-- Responses are stored anonymously in Google Sheets
-- Timestamps are recorded for analytics only
-- Data is not shared with third parties
+The app includes 8 realistic sample responses about starting a coding journey:
+- Responses range from excited to nervous to overwhelmed
+- Demonstrates various emotions and attitudes toward learning to code
+- Shows how the word cloud emphasizes key themes like "excited", "learning", "challenging", and "creative"
 
-## License
+## 🤝 Contributing
 
-This project is open source and available under the MIT License.
+This project is designed for educational use. Feel free to:
+- Fork the repository for your own classroom
+- Customize the styling and functionality
+- Add new features like sentiment analysis or response categories
+- Share improvements back to the community
 
-## Support
+## 📄 License
 
-For technical issues or questions:
-1. Check the browser console for errors
-2. Verify Google Apps Script deployment
-3. Test with demo mode first
-4. Review the troubleshooting section above
+Open source project designed for educational use in coding classrooms.
 
-Perfect for educators who want to create an engaging, interactive first day experience while introducing students to real-time web applications!
+---
+
+**Ready to use!** Share [https://tcu-dcda.github.io/word_cloud_app/](https://tcu-dcda.github.io/word_cloud_app/) with your students and watch their feelings come to life in the word cloud! 🎓✨

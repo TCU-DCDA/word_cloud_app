@@ -1,7 +1,7 @@
 // Configuration - UPDATE THESE VALUES
 const CONFIG = {
     // Replace with your Google Apps Script Web App URL (after deployment)
-    GOOGLE_SCRIPT_URL: 'YOUR_GOOGLE_SCRIPT_URL_HERE',
+    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbznDcgZ6Sd2Bco84Q3L6xqZ8D92TxD1JnpjiSbHB0JusulIrfgNWSdybWJ_WC0ZMveT-Q/exec',
     
     // Update interval in milliseconds (10 seconds)
     UPDATE_INTERVAL: 10000,

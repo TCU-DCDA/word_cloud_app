@@ -32,23 +32,34 @@ The app is currently running in **demo mode** with sample student responses to s
 - **Character limit**: 500-character limit encourages concise, thoughtful responses
 - **Live statistics**: Shows total number of responses and last update time
 
-## 🔧 Technical Setup (Optional)
+## 🔧 Final Setup (Google Sheets Integration)
 
-The app currently runs in demo mode. To connect it to Google Sheets for persistent data storage:
+**CURRENT STATUS**: Ready for final deployment! Your Google Sheet is configured and the app just needs the Google Apps Script URL.
 
-### Google Sheets Integration
+### Quick Setup Guide
 
-1. **Create a Google Sheet**
-   - Create a new Google Sheet
-   - Rename the first tab to "Responses"
-   - Add headers: `Timestamp | Feelings | Word Count`
+1. **Use the Configuration Helper** 
+   - Open `configuration-helper.html` in your browser for step-by-step guidance
+   - Or follow the detailed guide in `DEPLOYMENT_GUIDE.md`
 
-2. **Deploy Google Apps Script**
-   - Copy the code from `google-apps-script-formdata.js`
-   - Create a new Google Apps Script project
-   - Replace the default code with the copied code
-   - Update the `SHEET_ID` with your Google Sheet ID
-   - Deploy as a web app with "Anyone" access
+2. **Your Google Sheet is Ready**
+   - **Sheet ID**: `1J7S7gsCAmAhqKIG-U-jSJ63SErG8UZQNiFDa11ncnfE`
+   - **Sheet Name**: `Responses` (make sure this tab exists)
+   - All Google Apps Script files are pre-configured with your Sheet ID
+
+3. **Deploy Google Apps Script** (5 minutes)
+   - Go to [script.google.com](https://script.google.com)
+   - Create new project and paste code from `google-apps-script-production.js`
+   - Deploy as Web App with "Anyone" access
+   - Copy the Web App URL
+
+4. **Update Frontend Configuration**
+   - Replace `'YOUR_GOOGLE_SCRIPT_URL_HERE'` in `script.js` with your Web App URL
+   - Change `USE_DEMO_MODE: true` to `USE_DEMO_MODE: false`
+
+5. **Test and Deploy**
+   - Use `integration-test.html` to verify Google Sheets connection
+   - Commit changes to GitHub for automatic deployment
 
 3. **Update the Application**
    - Edit `script.js` 

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding Journey Word Cloud</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Your Coding Journey Begins</h1>
+            <p>Share your feelings about starting to learn coding. Watch our collective thoughts grow!</p>
+        </header>
+
+        <main>
+            <!-- Submission Form -->
+            <section class="submission-section">
+                <div class="form-container">
+                    <h2>How are you feeling about learning to code?</h2>
+                    <form id="feelingsForm">
+                        <textarea 
+                            id="feelingsText" 
+                            placeholder="Share your thoughts, feelings, hopes, or concerns about starting your coding journey... (e.g., 'excited but nervous', 'curious about possibilities', 'worried about complexity')"
+                            maxlength="500"
+                            required
+                        ></textarea>
+                        <div class="form-footer">
+                            <span class="char-counter">0/500</span>
+                            <button type="submit" id="submitBtn">Share My Feelings</button>
+                        </div>
+                    </form>
+                    <div id="submitMessage" class="message hidden"></div>
+                </div>
+            </section>
+
+            <!-- Word Cloud Display -->
+            <section class="wordcloud-section">
+                <div class="wordcloud-container">
+                    <h2>Our Collective Coding Journey</h2>
+                    <div class="stats">
+                        <span id="responseCount">0 responses</span>
+                        <span id="lastUpdate">Updated: Never</span>
+                    </div>
+                    <canvas id="wordcloud" width="800" height="400"></canvas>
+                    <div id="loadingMessage" class="loading">Building word cloud...</div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Responses are collected anonymously • Updates every 10 seconds</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

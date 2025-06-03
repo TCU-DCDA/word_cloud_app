@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Test Data to Word Cloud</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Add Test Data to Word Cloud</h1>
+    <p>Click the buttons below to add sample responses to your Google Sheet:</p>
+    
+    <button onclick="addTestData('excited nervous hopeful challenging creative')">Add Response 1</button>
+    <button onclick="addTestData('curious anxious motivated intimidated passionate')">Add Response 2</button>
+    <button onclick="addTestData('eager worried confident overwhelming inspiring')">Add Response 3</button>
+    <button onclick="addTestData('thrilled scared determined complex fascinating')">Add Response 4</button>
+    <button onclick="addTestData('enthusiastic uncertain ambitious difficult rewarding')">Add Response 5</button>
+    <button onclick="addAllTestData()">Add All Test Data</button>
+    <button onclick="fetchData()">Check Current Data</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0K_k3jX8eHbnANne29u8-r91gFEyyFL2VX5dWgPtPFE_De3RWi0Nq77o8pioah-us/exec';
+        
+        async function addTestData(feelings) {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'submit',
+                        feelings: feelings,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult(`✅ Added: "${feelings}"`, 'success');
+                } else {
+                    showResult(`❌ Failed to add: "${feelings}" - ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Error adding: "${feelings}" - ${error.message}`, 'error');
+            }
+        }
+        
+        async function addAllTestData() {
+            const testResponses = [
+                'excited nervous hopeful challenging creative',
+                'curious anxious motivated intimidating passionate',
+                'eager worried confident overwhelming inspiring',
+                'thrilled scared determined complex fascinating',
+                'enthusiastic uncertain ambitious difficult rewarding',
+                'amazed confused focused intimidating empowering',
+                'pumped terrified organized chaotic meaningful',
+                'interested overwhelmed structured unpredictable valuable'
+            ];
+            
+            showResult('Adding all test data...', 'success');
+            
+            for (const response of testResponses) {
+                await addTestData(response);
+                await new Promise(resolve => setTimeout(resolve, 500)); // Small delay between requests
+            }
+            
+            showResult('✅ All test data added!', 'success');
+        }
+        
+        async function fetchData() {
+            try {
+                const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=fetch`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult(`📊 Current data: ${result.count} responses in sheet`, 'success');
+                    if (result.responses.length > 0) {
+                        result.responses.forEach((resp, index) => {
+                            showResult(`${index + 1}. "${resp.feelings}"`, 'success');
+                        });
+                    }
+                } else {
+                    showResult(`❌ Failed to fetch data: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Error fetching data: ${error.message}`, 'error');
+            }
+        }
+        
+        function showResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            resultsDiv.appendChild(div);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html>

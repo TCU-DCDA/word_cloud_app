@@ -1,7 +1,7 @@
 // Configuration - UPDATE THESE VALUES
 const CONFIG = {
     // Replace with your Google Apps Script Web App URL (after deployment)
-    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzSuRPJiafE-Rh9pYuev0Gsa8DwFMKEGaoB-kgvyhcBmUUQ0_Is646te8QInCasZ4Zx/exec',
+    GOOGLE_SCRIPT_URL: 'YOUR_GOOGLE_SCRIPT_URL_HERE',
     
     // Update interval in milliseconds (10 seconds)
     UPDATE_INTERVAL: 10000,
@@ -124,28 +124,41 @@ async function handleSubmit(e) {
 }
 
 async function submitToGoogleSheets(feelings) {
+    console.log('Submitting to Google Sheets:', feelings);
+    console.log('Using URL:', CONFIG.GOOGLE_SCRIPT_URL);
+    
+    // Try form data approach for better Google Apps Script compatibility
+    const formData = new FormData();
+    formData.append('action', 'submit');
+    formData.append('feelings', feelings);
+    formData.append('timestamp', new Date().toISOString());
+    
+    console.log('Form data created');
+    
     const response = await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
         method: 'POST',
         mode: 'cors',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            action: 'submit',
-            feelings: feelings,
-            timestamp: new Date().toISOString()
-        })
+        redirect: 'follow',
+        body: formData
     });
 
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+
     if (!response.ok) {
-        throw new Error('Network response was not ok');
+        const errorText = await response.text();
+        console.error('Response error text:', errorText);
+        throw new Error(`Network response was not ok: ${response.status} - ${errorText}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log('Response result:', result);
+    return result;
 }
 
 async function fetchAndUpdateWordCloud() {
     try {
+        console.log('Fetching word cloud data...');
         loadingMessage.style.display = 'block';
         
         let data;
@@ -154,8 +167,23 @@ async function fetchAndUpdateWordCloud() {
             data = getDemoData();
         } else {
             // Fetch from Google Sheets
-            const response = await fetch(`${CONFIG.GOOGLE_SCRIPT_URL}?action=fetch`);
+            const fetchUrl = `${CONFIG.GOOGLE_SCRIPT_URL}?action=fetch`;
+            console.log('Fetching from:', fetchUrl);
+            
+            const response = await fetch(fetchUrl, {
+                redirect: 'follow'
+            });
+            console.log('Fetch response status:', response.status);
+            console.log('Fetch response ok:', response.ok);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Fetch error text:', errorText);
+                throw new Error(`Fetch failed: ${response.status} - ${errorText}`);
+            }
+            
             data = await response.json();
+            console.log('Fetched data:', data);
         }
         
         updateWordFrequency(data.responses || []);
@@ -164,6 +192,7 @@ async function fetchAndUpdateWordCloud() {
         
     } catch (error) {
         console.error('Error fetching data:', error);
+        showMessage('Error loading word cloud data: ' + error.message, 'error');
     } finally {
         loadingMessage.style.display = 'none';
     }
@@ -283,7 +312,48 @@ function startDemoMode() {
     }, 8000);
 }
 
-let demoResponses = [];
+let demoResponses = [
+    {
+        timestamp: '2025-06-03T16:00:00.000Z',
+        feelings: 'I am excited about learning to code and creating amazing projects! This feels challenging but rewarding.',
+        wordCount: 16
+    },
+    {
+        timestamp: '2025-06-03T16:05:00.000Z',
+        feelings: 'Nervous but excited to start my coding journey. Looking forward to building websites and apps.',
+        wordCount: 15
+    },
+    {
+        timestamp: '2025-06-03T16:10:00.000Z',
+        feelings: 'I feel motivated and ready to learn. Coding seems like a superpower that can solve real problems.',
+        wordCount: 17
+    },
+    {
+        timestamp: '2025-06-03T16:15:00.000Z',
+        feelings: 'Curious about how websites work behind the scenes. Ready to dive into HTML, CSS, and JavaScript.',
+        wordCount: 16
+    },
+    {
+        timestamp: '2025-06-03T16:20:00.000Z',
+        feelings: 'I feel empowered knowing I can learn to create technology instead of just consuming it.',
+        wordCount: 16
+    },
+    {
+        timestamp: '2025-06-03T16:25:00.000Z',
+        feelings: 'Excited but overwhelmed. There seems to be so much to learn, but I am ready for the challenge.',
+        wordCount: 18
+    },
+    {
+        timestamp: '2025-06-03T16:30:00.000Z',
+        feelings: 'I feel like I am about to unlock a new world of possibilities and creativity through programming.',
+        wordCount: 17
+    },
+    {
+        timestamp: '2025-06-03T16:35:00.000Z',
+        feelings: 'Ready to problem-solve and think logically. Coding feels like learning a new language of innovation.',
+        wordCount: 16
+    }
+];
 
 function addDemoResponse(feelings) {
     demoResponses.push({

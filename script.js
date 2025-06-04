@@ -1,7 +1,7 @@
 // Configuration - UPDATE THESE VALUES
 const CONFIG = {
     // Replace with your Google Apps Script Web App URL (after deployment)
-    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbznDcgZ6Sd2Bco84Q3L6xqZ8D92TxD1JnpjiSbHB0JusulIrfgNWSdybWJ_WC0ZMveT-Q/exec',
+    GOOGLE_SCRIPT_URL: getGoogleScriptURL(),
     
     // Update interval in milliseconds (10 seconds)
     UPDATE_INTERVAL: 10000,
@@ -40,6 +40,14 @@ const CONFIG = {
             'insufficient', 'lacking', 'missing', 'wrong', 'error', 'mistake', 'broken'
         ]
     }
+};
+
+// Environment-based configuration for better security
+const getGoogleScriptURL = () => {
+    // In production, this should come from environment variables
+    // For now, we'll use a placeholder that forces demo mode
+    return 'YOUR_GOOGLE_SCRIPT_URL_HERE';
+    // return process.env.GOOGLE_SCRIPT_URL || 'YOUR_GOOGLE_SCRIPT_URL_HERE';
 };
 
 // Global variables
@@ -108,16 +116,41 @@ async function handleSubmit(e) {
         return;
     }
 
+    // Sanitize input to prevent XSS
+    const sanitizedFeelings = sanitizeInput(feelings);
+    if (sanitizedFeelings !== feelings) {
+        showMessage('Please avoid using special characters or HTML in your response.', 'error');
+        return;
+    }
+
+    // Check rate limiting
+    if (!checkRateLimit()) {
+        showMessage('Too many submissions. Please wait a minute before submitting again.', 'error');
+        return;
+    }
+
+    // Validate content
+    if (!validateContent(sanitizedFeelings)) {
+        showMessage('Your response contains invalid content. Please revise and try again.', 'error');
+        return;
+    }
+
+    // Check rate limit
+    if (!checkRateLimit()) {
+        showMessage('You are submitting responses too quickly. Please wait a moment and try again.', 'error');
+        return;
+    }
+
     // Disable form and show loading state
     setSubmitState(true);
     
     try {
         if (CONFIG.GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_SCRIPT_URL_HERE') {
             // Demo mode - simulate submission
-            await simulateSubmission(feelings);
+            await simulateSubmission(sanitizedFeelings);
         } else {
             // Real submission to Google Sheets
-            await submitToGoogleSheets(feelings);
+            await submitToGoogleSheets(sanitizedFeelings);
         }
         
         // Clear form and show success
@@ -229,7 +262,9 @@ function updateWordFrequency(responses) {
     ]);
     
     responses.forEach(response => {
-        const words = response.feelings
+        // Sanitize the response data
+        const sanitizedFeelings = sanitizeInput(response.feelings || '');
+        const words = sanitizedFeelings
             .toLowerCase()
             .replace(/[^\w\s]/g, ' ')
             .split(/\s+/)
@@ -283,9 +318,10 @@ function renderWordChart() {
             const percentage = (count / maxCount) * 100;
             const sentiment = analyzeSentiment(word);
             const color = CONFIG.CHART_OPTIONS.sentimentColors[sentiment];
+            const sanitizedWord = sanitizeHTML(word);
             return `
                 <div class="word-bar">
-                    <div class="word-label">${word}</div>
+                    <div class="word-label">${sanitizedWord}</div>
                     <div class="word-bar-fill ${sentiment}" style="width: ${Math.max(percentage, 5)}%; background: ${color};" title="Sentiment: ${sentiment}">
                         ${count}
                     </div>
@@ -340,6 +376,63 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+// Security functions
+function sanitizeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function sanitizeInput(input) {
+    if (typeof input !== 'string') return '';
+    
+    // Remove potential XSS vectors
+    return input
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // Remove iframe tags
+        .replace(/javascript:/gi, '') // Remove javascript: links
+        .replace(/on\w+\s*=/gi, '') // Remove event handlers
+        .trim()
+        .substring(0, 500); // Enforce length limit server-side
+}
+
+// Rate limiting
+const RATE_LIMIT = {
+    maxSubmissions: 3,
+    timeWindow: 60000, // 1 minute
+    submissions: []
+};
+
+function checkRateLimit() {
+    const now = Date.now();
+    // Remove old submissions outside the time window
+    RATE_LIMIT.submissions = RATE_LIMIT.submissions.filter(
+        timestamp => now - timestamp < RATE_LIMIT.timeWindow
+    );
+    
+    if (RATE_LIMIT.submissions.length >= RATE_LIMIT.maxSubmissions) {
+        return false; // Rate limit exceeded
+    }
+    
+    RATE_LIMIT.submissions.push(now);
+    return true;
+}
+
+// Content validation
+function validateContent(text) {
+    // Check for suspicious patterns
+    const suspiciousPatterns = [
+        /<script/i,
+        /javascript:/i,
+        /data:text\/html/i,
+        /vbscript:/i,
+        /@import/i,
+        /expression\(/i
+    ];
+    
+    return !suspiciousPatterns.some(pattern => pattern.test(text));
 }
 
 // Demo mode functions (for testing without Google Sheets)

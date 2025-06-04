@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="url"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .result {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left: 4px solid #f44336;
+        }
+        .warning {
+            border-left: 4px solid #ff9800;
+        }
+        .step {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Google Sheets Integration Test</h1>
+        
+        <div class="step">
+            <h3>Step 1: Enter your Google Apps Script URL</h3>
+            <p>After deploying your Google Apps Script, paste the Web App URL here:</p>
+            <div class="input-group">
+                <label for="scriptUrl">Google Apps Script URL:</label>
+                <input type="url" id="scriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Test the Connection</h3>
+            <button onclick="testFetch()">Test Fetch (GET)</button>
+            <button onclick="testSubmit()">Test Submit (POST)</button>
+            <div id="testResults"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Update Your App</h3>
+            <p>If the tests pass, copy this configuration to your script.js file:</p>
+            <div id="configOutput" class="result">
+                <em>Enter your Google Apps Script URL above and test it first.</em>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Manual Test</h3>
+            <div class="input-group">
+                <label for="testMessage">Test Message:</label>
+                <textarea id="testMessage" rows="3" placeholder="Enter a test message about coding feelings...">I'm excited to test the Google Sheets integration! This is working great.</textarea>
+            </div>
+            <button onclick="submitTestMessage()">Submit Test Message</button>
+            <div id="manualResults"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentScriptUrl = '';
+
+        function getScriptUrl() {
+            const url = document.getElementById('scriptUrl').value.trim();
+            if (!url) {
+                alert('Please enter your Google Apps Script URL first!');
+                return null;
+            }
+            currentScriptUrl = url;
+            return url;
+        }
+
+        async function testFetch() {
+            const url = getScriptUrl();
+            if (!url) return;
+
+            const resultDiv = document.getElementById('testResults');
+            resultDiv.innerHTML = '<div class="result warning">Testing fetch request...</div>';
+
+            try {
+                const response = await fetch(`${url}?action=fetch`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="result success">✅ Fetch Test PASSED!
+Response: ${JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ Fetch Test FAILED!
+Response: ${JSON.stringify(data, null, 2)}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Fetch Test ERROR!
+Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testSubmit() {
+            const url = getScriptUrl();
+            if (!url) return;
+
+            const resultDiv = document.getElementById('testResults');
+            resultDiv.innerHTML = '<div class="result warning">Testing submit request...</div>';
+
+            try {
+                const formData = new FormData();
+                formData.append('action', 'submit');
+                formData.append('feelings', 'This is a test submission from the integration test page!');
+                formData.append('timestamp', new Date().toISOString());
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'cors',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="result success">✅ Submit Test PASSED!
+Response: ${JSON.stringify(data, null, 2)}
+
+Now check your Google Sheet to see if the test data appeared!</div>`;
+                    updateConfig();
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ Submit Test FAILED!
+Response: ${JSON.stringify(data, null, 2)}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Submit Test ERROR!
+Error: ${error.message}</div>`;
+            }
+        }
+
+        async function submitTestMessage() {
+            const url = getScriptUrl();
+            if (!url) return;
+
+            const message = document.getElementById('testMessage').value.trim();
+            if (!message) {
+                alert('Please enter a test message!');
+                return;
+            }
+
+            const resultDiv = document.getElementById('manualResults');
+            resultDiv.innerHTML = '<div class="result warning">Submitting test message...</div>';
+
+            try {
+                const formData = new FormData();
+                formData.append('action', 'submit');
+                formData.append('feelings', message);
+                formData.append('timestamp', new Date().toISOString());
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'cors',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="result success">✅ Message submitted successfully!
+Check your Google Sheet to see: "${message}"
+
+Response: ${JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ Submission failed!
+Response: ${JSON.stringify(data, null, 2)}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Submission error!
+Error: ${error.message}</div>`;
+            }
+        }
+
+        function updateConfig() {
+            const configDiv = document.getElementById('configOutput');
+            const url = currentScriptUrl;
+            
+            const config = `// Update this line in your script.js file:
+GOOGLE_SCRIPT_URL: '${url}',
+
+// Full configuration block:
+const CONFIG = {
+    GOOGLE_SCRIPT_URL: '${url}',
+    UPDATE_INTERVAL: 10000,
+    // ... rest of your configuration
+};
+
+🎉 Your Google Sheets integration is ready!
+Your app will now save and load real responses instead of demo data.`;
+
+            configDiv.textContent = config;
+            configDiv.className = 'result success';
+        }
+
+        // Auto-fill if there's a URL in the hash
+        if (window.location.hash) {
+            document.getElementById('scriptUrl').value = decodeURIComponent(window.location.hash.substring(1));
+        }
+    </script>
+</body>
+</html>

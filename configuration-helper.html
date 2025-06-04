@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Cloud App - Configuration Helper</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .step {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .warning {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid #FFC107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            color: #FFC107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Word Cloud App Configuration Helper</h1>
+        
+        <div class="step">
+            <h3>Step 1: Your Google Sheet Information</h3>
+            <p><strong>Sheet ID:</strong> <code>1J7S7gsCAmAhqKIG-U-jSJ63SErG8UZQNiFDa11ncnfE</code></p>
+            <p><strong>Status:</strong> ✅ Already configured in Google Apps Script files</p>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Deploy Google Apps Script</h3>
+            <p>1. Go to <a href="https://script.google.com" target="_blank" style="color: #4CAF50;">script.google.com</a></p>
+            <p>2. Create a new project</p>
+            <p>3. Copy and paste this code into Code.gs:</p>
+            <button onclick="copyGoogleScript()">📋 Copy Google Apps Script Code</button>
+            <div class="code-block" id="googleScriptCode" style="display: none;">
+                <!-- Google Apps Script code will be inserted here -->
+            </div>
+            <p>4. Deploy as Web App with "Anyone" access</p>
+            <p>5. Copy the Web App URL and paste it below:</p>
+            <input type="text" id="webAppUrl" placeholder="Paste your Google Apps Script Web App URL here">
+            <button onclick="updateConfiguration()">🔧 Generate Configuration</button>
+        </div>
+
+        <div class="step" id="configStep" style="display: none;">
+            <h3>Step 3: Update Your App Configuration</h3>
+            <p>Copy this code and replace the CONFIG object in your script.js file:</p>
+            <div class="code-block" id="configCode"></div>
+            <button onclick="copyConfig()">📋 Copy Configuration</button>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Test Your Configuration</h3>
+            <p>Use these test pages to verify everything works:</p>
+            <p>
+                <button onclick="openTestPage('integration-test.html')">🧪 Test Google Sheets Connection</button>
+                <button onclick="openTestPage('index.html')">🎯 Test Main App</button>
+            </p>
+        </div>
+
+        <div class="success">
+            <h3>🎉 Your App is Ready!</h3>
+            <p><strong>Live URL:</strong> <a href="https://tcu-dcda.github.io/word_cloud_app/" target="_blank" style="color: #4CAF50;">https://tcu-dcda.github.io/word_cloud_app/</a></p>
+            <p>Once configured, your students can submit their feelings and see the real-time word cloud!</p>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ Before Class Day</h3>
+            <p>• Test with a few sample submissions</p>
+            <p>• Make sure your Google Sheet has a "Responses" tab</p>
+            <p>• Verify the word cloud updates in real-time</p>
+            <p>• Have a backup plan (paper forms) just in case</p>
+        </div>
+    </div>
+
+    <script>
+        async function copyGoogleScript() {
+            try {
+                const response = await fetch('google-apps-script-production.js');
+                const code = await response.text();
+                
+                document.getElementById('googleScriptCode').textContent = code;
+                document.getElementById('googleScriptCode').style.display = 'block';
+                
+                await navigator.clipboard.writeText(code);
+                alert('✅ Google Apps Script code copied to clipboard!');
+            } catch (error) {
+                console.error('Error copying script:', error);
+                alert('❌ Error copying script. Please copy manually from google-apps-script-production.js');
+            }
+        }
+
+        function updateConfiguration() {
+            const webAppUrl = document.getElementById('webAppUrl').value.trim();
+            
+            if (!webAppUrl) {
+                alert('Please enter your Google Apps Script Web App URL');
+                return;
+            }
+
+            if (!webAppUrl.includes('script.google.com') || !webAppUrl.includes('/exec')) {
+                alert('⚠️ Make sure you\'re using the Web App URL that ends with /exec');
+                return;
+            }
+
+            const configCode = `const CONFIG = {
+    GOOGLE_SCRIPT_URL: '${webAppUrl}',
+    USE_DEMO_MODE: false,  // Changed to false for live mode
+    POLL_INTERVAL: 5000,   // Check for new responses every 5 seconds
+    WORD_CLOUD_OPTIONS: {
+        fontFamily: 'Arial, sans-serif',
+        fontWeight: 'bold',
+        minFontSize: 12,
+        maxFontSize: 48,
+        backgroundColor: 'transparent',
+        colors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F']
+    }
+};`;
+
+            document.getElementById('configCode').textContent = configCode;
+            document.getElementById('configStep').style.display = 'block';
+        }
+
+        async function copyConfig() {
+            const configCode = document.getElementById('configCode').textContent;
+            try {
+                await navigator.clipboard.writeText(configCode);
+                alert('✅ Configuration code copied to clipboard!\n\nNow paste this into your script.js file, replacing the existing CONFIG object.');
+            } catch (error) {
+                console.error('Error copying config:', error);
+                alert('❌ Error copying to clipboard. Please copy manually.');
+            }
+        }
+
+        function openTestPage(page) {
+            window.open(page, '_blank');
+        }
+    </script>
+</body>
+</html>

@@ -6,24 +6,39 @@ const CONFIG = {
     // Update interval in milliseconds (10 seconds)
     UPDATE_INTERVAL: 10000,
     
-    // Word cloud settings
-    WORDCLOUD_OPTIONS: {
-        list: [],
-        gridSize: Math.round(16 * 1000 / 1024),
-        weightFactor: function(size) {
-            return Math.pow(size, 2.3) * 1000 / 1024 * 1.5;
-        },
-        fontFamily: 'Times, serif',
-        color: function() {
-            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'];
-            return colors[Math.floor(Math.random() * colors.length)];
-        },
-        rotateRatio: 0.5,
-        rotationSteps: 2,
-        backgroundColor: '#fafafa',
-        click: function(item) {
-            console.log(item[0] + ': ' + item[1]);
+    // Word chart settings
+    CHART_OPTIONS: {
+        maxWords: 20,
+        sentimentColors: {
+            positive: '#22c55e', // Green
+            negative: '#ef4444', // Red
+            neutral: '#eab308'   // Yellow
         }
+    },
+    
+    // Sentiment word lists
+    SENTIMENT_WORDS: {
+        positive: [
+            'excited', 'amazing', 'awesome', 'great', 'good', 'excellent', 'fantastic', 'wonderful',
+            'love', 'enjoy', 'happy', 'thrilled', 'enthusiastic', 'passionate', 'motivated',
+            'confident', 'optimistic', 'hopeful', 'eager', 'ready', 'capable', 'strong',
+            'creative', 'innovative', 'brilliant', 'smart', 'clever', 'talented', 'skilled',
+            'successful', 'achievement', 'progress', 'growth', 'learning', 'opportunity',
+            'potential', 'possibilities', 'future', 'career', 'dreams', 'goals', 'aspirations',
+            'fun', 'interesting', 'fascinating', 'engaging', 'inspiring', 'empowering',
+            'breakthrough', 'solution', 'success', 'accomplishment', 'victory', 'triumph'
+        ],
+        negative: [
+            'scared', 'afraid', 'anxious', 'worried', 'nervous', 'stressed', 'overwhelmed',
+            'difficult', 'hard', 'challenging', 'struggle', 'struggling', 'confused', 'lost',
+            'frustrated', 'annoying', 'boring', 'tedious', 'exhausting', 'tiring',
+            'impossible', 'hopeless', 'discouraged', 'defeated', 'failure', 'failed',
+            'terrible', 'awful', 'horrible', 'bad', 'worst', 'hate', 'dislike',
+            'complicated', 'complex', 'overwhelming', 'intimidating', 'scary', 'frightening',
+            'doubt', 'uncertain', 'unsure', 'worried', 'concern', 'concerned', 'problem',
+            'issues', 'obstacles', 'barriers', 'limitations', 'weakness', 'inadequate',
+            'insufficient', 'lacking', 'missing', 'wrong', 'error', 'mistake', 'broken'
+        ]
     }
 };
 
@@ -40,7 +55,7 @@ const submitMessage = document.getElementById('submitMessage');
 const charCounter = document.querySelector('.char-counter');
 const responseCount = document.getElementById('responseCount');
 const lastUpdate = document.getElementById('lastUpdate');
-const wordcloudCanvas = document.getElementById('wordcloud');
+const wordChartContainer = document.getElementById('wordChart');
 const loadingMessage = document.getElementById('loadingMessage');
 
 // Initialize the app
@@ -56,12 +71,12 @@ function initializeApp() {
         showMessage('Demo mode: Google Sheets integration not configured yet.', 'error');
         startDemoMode();
     } else {
-        fetchAndUpdateWordCloud();
+        fetchAndUpdateWordChart();
         startAutoUpdate();
     }
     
-    // Initial word cloud render
-    renderWordCloud();
+    // Initial word chart render
+    renderWordChart();
 }
 
 function setupEventListeners() {
@@ -108,11 +123,11 @@ async function handleSubmit(e) {
         // Clear form and show success
         textarea.value = '';
         charCounter.textContent = '0/500';
-        showMessage('Thank you for sharing! Your response has been added to our word cloud.', 'success');
+        showMessage('Thank you for sharing! Your response has been added to our word chart.', 'success');
         
-        // Update word cloud immediately
+        // Update word chart immediately
         setTimeout(() => {
-            fetchAndUpdateWordCloud();
+            fetchAndUpdateWordChart();
         }, 1000);
         
     } catch (error) {
@@ -156,9 +171,9 @@ async function submitToGoogleSheets(feelings) {
     return result;
 }
 
-async function fetchAndUpdateWordCloud() {
+async function fetchAndUpdateWordChart() {
     try {
-        console.log('Fetching word cloud data...');
+        console.log('Fetching word chart data...');
         loadingMessage.style.display = 'block';
         
         let data;
@@ -187,12 +202,12 @@ async function fetchAndUpdateWordCloud() {
         }
         
         updateWordFrequency(data.responses || []);
-        renderWordCloud();
+        renderWordChart();
         updateStats();
         
     } catch (error) {
         console.error('Error fetching data:', error);
-        showMessage('Error loading word cloud data: ' + error.message, 'error');
+        showMessage('Error loading word chart data: ' + error.message, 'error');
     } finally {
         loadingMessage.style.display = 'none';
     }
@@ -226,23 +241,60 @@ function updateWordFrequency(responses) {
     });
 }
 
-function renderWordCloud() {
+function analyzeSentiment(word) {
+    const lowerWord = word.toLowerCase();
+    
+    if (CONFIG.SENTIMENT_WORDS.positive.includes(lowerWord)) {
+        return 'positive';
+    } else if (CONFIG.SENTIMENT_WORDS.negative.includes(lowerWord)) {
+        return 'negative';
+    } else {
+        return 'neutral';
+    }
+}
+
+function renderWordChart() {
     const wordList = Object.entries(wordFrequency)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 100); // Limit to top 100 words
+        .slice(0, CONFIG.CHART_OPTIONS.maxWords);
     
     if (wordList.length === 0) {
-        const ctx = wordcloudCanvas.getContext('2d');
-        ctx.clearRect(0, 0, wordcloudCanvas.width, wordcloudCanvas.height);
-        ctx.fillStyle = '#718096';
-        ctx.font = '16px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('Waiting for responses...', wordcloudCanvas.width / 2, wordcloudCanvas.height / 2);
+        wordChartContainer.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #718096; font-size: 16px;">
+                Waiting for responses...
+            </div>
+        `;
         return;
     }
     
-    CONFIG.WORDCLOUD_OPTIONS.list = wordList;
-    WordCloud(wordcloudCanvas, CONFIG.WORDCLOUD_OPTIONS);
+    const maxCount = wordList[0][1];
+    
+    const chartHTML = `
+        <div class="chart-header">
+            <div class="chart-title">Most Common Words</div>
+            <div class="chart-subtitle">Top ${wordList.length} words from ${totalResponses} responses</div>
+            <div class="sentiment-legend">
+                <span class="legend-item"><span class="legend-color positive"></span>Positive</span>
+                <span class="legend-item"><span class="legend-color negative"></span>Negative</span>
+                <span class="legend-item"><span class="legend-color neutral"></span>Neutral</span>
+            </div>
+        </div>
+        ${wordList.map(([word, count], index) => {
+            const percentage = (count / maxCount) * 100;
+            const sentiment = analyzeSentiment(word);
+            const color = CONFIG.CHART_OPTIONS.sentimentColors[sentiment];
+            return `
+                <div class="word-bar">
+                    <div class="word-label">${word}</div>
+                    <div class="word-bar-fill ${sentiment}" style="width: ${Math.max(percentage, 5)}%; background: ${color};" title="Sentiment: ${sentiment}">
+                        ${count}
+                    </div>
+                </div>
+            `;
+        }).join('')}
+    `;
+    
+    wordChartContainer.innerHTML = chartHTML;
 }
 
 function updateStats() {
@@ -270,14 +322,12 @@ function showMessage(text, type) {
 }
 
 function startAutoUpdate() {
-    updateTimer = setInterval(fetchAndUpdateWordCloud, CONFIG.UPDATE_INTERVAL);
+    updateTimer = setInterval(fetchAndUpdateWordChart, CONFIG.UPDATE_INTERVAL);
 }
 
 function handleResize() {
-    const container = wordcloudCanvas.parentElement;
-    const rect = container.getBoundingClientRect();
-    wordcloudCanvas.width = rect.width - 2; // Account for border
-    renderWordCloud();
+    // Re-render the chart on resize
+    renderWordChart();
 }
 
 function debounce(func, wait) {
@@ -298,17 +348,17 @@ function startDemoMode() {
     // Add some demo data every few seconds
     setTimeout(() => {
         addDemoResponse('excited nervous curious');
-        fetchAndUpdateWordCloud();
+        fetchAndUpdateWordChart();
     }, 2000);
     
     setTimeout(() => {
         addDemoResponse('challenging overwhelming potential');
-        fetchAndUpdateWordCloud();
+        fetchAndUpdateWordChart();
     }, 5000);
     
     setTimeout(() => {
         addDemoResponse('creative problem-solving innovative');
-        fetchAndUpdateWordCloud();
+        fetchAndUpdateWordChart();
     }, 8000);
 }
 

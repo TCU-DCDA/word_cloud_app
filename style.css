@@ -170,12 +170,120 @@ main {
     color: #718096;
 }
 
-#wordcloud {
+.word-chart {
     width: 100%;
     height: 600px;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
     background: #fafafa;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.word-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 8px 0;
+}
+
+.word-label {
+    width: 120px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #4a5568;
+    text-align: right;
+    padding-right: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.word-bar-fill {
+    height: 24px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    min-width: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.word-bar-fill:hover {
+    transform: translateX(2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Sentiment-specific styling */
+.word-bar-fill.positive {
+    background: #22c55e !important;
+}
+
+.word-bar-fill.negative {
+    background: #ef4444 !important;
+}
+
+.word-bar-fill.neutral {
+    background: #eab308 !important;
+}
+
+.chart-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.chart-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #4a5568;
+}
+
+.chart-subtitle {
+    font-size: 12px;
+    color: #718096;
+}
+
+.sentiment-legend {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: #4a5568;
+    font-weight: 500;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend-color.positive {
+    background-color: #22c55e;
+}
+
+.legend-color.negative {
+    background-color: #ef4444;
+}
+
+.legend-color.neutral {
+    background-color: #eab308;
 }
 
 .loading {
@@ -217,8 +325,23 @@ footer {
         padding: 20px;
     }
     
-    #wordcloud {
+    .word-chart {
         height: 450px;
+        padding: 15px;
+    }
+    
+    .word-label {
+        width: 80px;
+        font-size: 12px;
+    }
+    
+    .sentiment-legend {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .legend-item {
+        font-size: 10px;
     }
 }
 

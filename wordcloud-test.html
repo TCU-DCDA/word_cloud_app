@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Cloud Rendering Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        canvas { border: 2px solid #ccc; margin: 20px 0; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Word Cloud Rendering Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Basic Word Cloud Library</h2>
+        <button onclick="testBasicWordCloud()">Test Basic Rendering</button>
+        <canvas id="testCanvas1" width="400" height="200"></canvas>
+        <div id="result1"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: App Configuration</h2>
+        <button onclick="testAppConfig()">Test App Word Cloud Config</button>
+        <canvas id="testCanvas2" width="400" height="200"></canvas>
+        <div id="result2"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Live Data Simulation</h2>
+        <button onclick="testLiveDataSimulation()">Test with Simulated Live Data</button>
+        <canvas id="testCanvas3" width="600" height="300"></canvas>
+        <div id="result3"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
+    <script>
+        // Same config as main app
+        const WORDCLOUD_OPTIONS = {
+            gridSize: Math.round(16 * 800 / 1024),
+            weightFactor: function(size) {
+                return Math.pow(size, 2.3) * 800 / 1024;
+            },
+            fontFamily: 'Times, serif',
+            color: function() {
+                const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            },
+            rotateRatio: 0.5,
+            rotationSteps: 2,
+            backgroundColor: '#fafafa'
+        };
+
+        function testBasicWordCloud() {
+            const canvas = document.getElementById('testCanvas1');
+            const result = document.getElementById('result1');
+            
+            try {
+                result.innerHTML = 'Testing basic word cloud...';
+                
+                const basicWords = [
+                    ['excited', 5],
+                    ['nervous', 3],
+                    ['learning', 4],
+                    ['coding', 6],
+                    ['challenge', 2]
+                ];
+                
+                const basicOptions = {
+                    list: basicWords,
+                    gridSize: 8,
+                    weightFactor: function(size) { return size * 8; },
+                    fontFamily: 'Arial',
+                    color: 'random-light',
+                    backgroundColor: '#fafafa'
+                };
+                
+                WordCloud(canvas, basicOptions);
+                result.innerHTML = '<span class="success">✓ Basic word cloud rendered successfully!</span>';
+                
+            } catch (error) {
+                result.innerHTML = `<span class="error">✗ Error: ${error.message}</span>`;
+                console.error('Basic test error:', error);
+            }
+        }
+
+        function testAppConfig() {
+            const canvas = document.getElementById('testCanvas2');
+            const result = document.getElementById('result2');
+            
+            try {
+                result.innerHTML = 'Testing app configuration...';
+                
+                const appWords = [
+                    ['excited', 8],
+                    ['nervous', 5],
+                    ['learning', 7],
+                    ['coding', 10],
+                    ['challenge', 4],
+                    ['creative', 6],
+                    ['overwhelming', 3],
+                    ['potential', 5]
+                ];
+                
+                const options = {...WORDCLOUD_OPTIONS};
+                options.list = appWords;
+                
+                // Adjust for smaller canvas
+                options.gridSize = 8;
+                options.weightFactor = function(size) {
+                    return size * 6;
+                };
+                
+                console.log('App config options:', options);
+                
+                WordCloud(canvas, options);
+                result.innerHTML = '<span class="success">✓ App configuration word cloud rendered successfully!</span>';
+                
+            } catch (error) {
+                result.innerHTML = `<span class="error">✗ Error: ${error.message}</span>`;
+                console.error('App config test error:', error);
+            }
+        }
+
+        function testLiveDataSimulation() {
+            const canvas = document.getElementById('testCanvas3');
+            const result = document.getElementById('result3');
+            
+            try {
+                result.innerHTML = 'Simulating live data processing...';
+                
+                // Simulate real student responses
+                const responses = [
+                    { feelings: 'I am excited about learning to code and creating amazing projects! This feels challenging but rewarding.' },
+                    { feelings: 'Nervous but excited to start my coding journey. Looking forward to building websites and apps.' },
+                    { feelings: 'I feel motivated and ready to learn. Coding seems like a superpower that can solve real problems.' },
+                    { feelings: 'Curious about how websites work behind the scenes. Ready to dive into HTML, CSS, and JavaScript.' },
+                    { feelings: 'I feel empowered knowing I can learn to create technology instead of just consuming it.' },
+                    { feelings: 'Excited but overwhelmed. There seems to be so much to learn, but I am ready for the challenge.' },
+                    { feelings: 'Creative problem-solving innovative thinking new possibilities' },
+                    { feelings: 'Collaborative learning community supportive environment growth mindset' }
+                ];
+                
+                // Process words exactly like the main app
+                const wordFrequency = {};
+                const stopWords = new Set([
+                    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+                    'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours',
+                    'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself',
+                    'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which',
+                    'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be',
+                    'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'will',
+                    'would', 'should', 'could', 'can', 'may', 'might', 'must', 'shall'
+                ]);
+                
+                responses.forEach(response => {
+                    const words = response.feelings
+                        .toLowerCase()
+                        .replace(/[^\w\s]/g, ' ')
+                        .split(/\s+/)
+                        .filter(word => word.length > 2 && !stopWords.has(word));
+                    
+                    words.forEach(word => {
+                        wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+                    });
+                });
+                
+                const wordList = Object.entries(wordFrequency)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 100);
+                
+                console.log('Processed word list:', wordList);
+                result.innerHTML += `<br>Processed ${wordList.length} unique words from ${responses.length} responses.`;
+                
+                if (wordList.length === 0) {
+                    result.innerHTML += '<br><span class="error">✗ No words found after processing!</span>';
+                    return;
+                }
+                
+                // Use exact app configuration
+                const options = {...WORDCLOUD_OPTIONS};
+                options.list = wordList;
+                
+                console.log('Final options for WordCloud:', options);
+                
+                WordCloud(canvas, options);
+                result.innerHTML += '<br><span class="success">✓ Live data simulation word cloud rendered successfully!</span>';
+                
+            } catch (error) {
+                result.innerHTML += `<br><span class="error">✗ Error: ${error.message}</span>`;
+                console.error('Live simulation test error:', error);
+            }
+        }
+
+        // Check if WordCloud library is loaded
+        window.addEventListener('load', () => {
+            if (typeof WordCloud === 'undefined') {
+                document.body.innerHTML = '<h1 style="color: red;">ERROR: WordCloud library not loaded!</h1>';
+            } else {
+                console.log('WordCloud library loaded successfully');
+            }
+        });
+    </script>
+</body>
+</html>

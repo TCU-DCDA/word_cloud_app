@@ -9,9 +9,9 @@ const CONFIG = {
     // Word cloud settings
     WORDCLOUD_OPTIONS: {
         list: [],
-        gridSize: Math.round(16 * 800 / 1024),
+        gridSize: Math.round(16 * 1000 / 1024),
         weightFactor: function(size) {
-            return Math.pow(size, 2.3) * 800 / 1024;
+            return Math.pow(size, 2.3) * 1000 / 1024 * 1.5;
         },
         fontFamily: 'Times, serif',
         color: function() {
